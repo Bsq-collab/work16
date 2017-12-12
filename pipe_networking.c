@@ -11,6 +11,11 @@
   returns the file descriptor for the upstream pipe.
   =========================*/
 int server_handshake(int *to_client) {
+  //creates the well known pipe and waits for a connection
+  mkfifo("server",0644);
+  printf("server pipe created\n");
+  int pipe= open("server",O_RDONLY);
+
   return 0;
 }
 
