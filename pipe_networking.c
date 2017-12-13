@@ -22,11 +22,14 @@ int server_handshake(int *to_client) {
   read(pipe,message,sizeof(message));
   printf("message read\n");
   //remove pipe for security
-  close(pipe);
+  //close(pipe);
   remove("server");
   printf("removed server byebye!!\n");
+  int m=open(message,O_WRONLY);
+  write(m,"writingback",100);
+  printf("Server wrote back\n");
+  return m;
 
-  return 0;
 }
 
 
