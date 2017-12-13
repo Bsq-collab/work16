@@ -19,11 +19,19 @@ int server_handshake(int *to_client) {
   client_handshake
   args: int * to_server
 
-  Perofrms the client side pipe 3 way handshake.
+  Performs the client side pipe 3 way handshake.
   Sets *to_server to the file descriptor for the upstream pipe.
 
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
+  mkfifo("ctos", 0755);
+  char * handshak = "Howdy";
+  char shakhand[HANDSHAKE_BUFFER_SIZE];
+
+  int ctos_fd = open("ctos", )
+  write("ctos", handhsak, HANDSHAKE_BUFFER_SIZE);
+  read("stoc", shakhand, HANDSHAKE_BUFFER_SIZE);
+  write("ctos", shakhand, HANDSHAKE_BUFFER_SIZE);
   return 0;
 }
