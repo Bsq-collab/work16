@@ -10,25 +10,24 @@
 
   returns the file descriptor for the upstream pipe.
   =========================*/
-int server_handshake(int *to_client) {
-  char message[256];
-  // creates the well known pipe server waits for connection
-  mkfifo("stoc",0644);
-  printf("server pipe created\n");
-  int pipe= open("stoc",O_RDONLY);
-  *to_client=pipe;
-  printf("to_client set to pipe\n");
-  printf("Well known pipe waiting for client\n");
-  read(pipe,message,sizeof(message));
-  printf("message read\n");
-  //remove pipe for security
-  close(pipe);
-  remove("stoc");
-  printf("removed server byebye!!\n");
-
-  return 0;
-}
-
+  int server_handshake(int *to_client) {
+    char message[HANDSHAKE_BUFFER_SIZE];
+    // creates the well known pipe server waits for connection
+    mkfifo("wkp",0644);
+    printf("wkp pipe created\n");
+    int from_client= open("wkp",O_RDONLY);
+    printf("to_client set to pipe\n");
+    printf("Well known pipe waiting for client\n");
+    read(from_client,message,sizeof(message));
+    printf("message read: %s\n",message);
+    //remove pipe for security
+    remove("server");
+    printf("removed server byebye!!\n");
+    *to_client=open(message,O_WRONLY);
+    write(*to_client,ACK,sizeof(message));
+    printf("Server wrote back\n");
+    return from_client;
+  }
 
 /*=========================
   client_handshake
@@ -40,18 +39,21 @@ int server_handshake(int *to_client) {
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
-  mkfifo(getpid(), 0755);
-  int ctos_fd = open(getpid(), O_RDONLY);
-  *to_server = ctos_fd;
-  char * tosend;
-  sscanf(tosend, "%d" + 0, getpid());
+  mkfifo(getpid(), 0755); //Created secret pipe to write to server with
+  int ctos_fd = open(getpid(), O_RDONLY); //Open the secret pipe and get its file descriptor
+  *to_server = ctos_fd; //Set to_server to the secret pipe's fd
+  char * tosend; //Message to send
+  sscanf(tosend, "%d" + 0, getpid()); //Write the pid/name of the pipe to tosend
 
-  int stoc_fd = open("stoc", O_WRONLY);
-  write(stoc_fd, tosend, strlen(tosend));
-  close(stoc_fd);
+  int stoc_fd = open("wkp", O_WRONLY); //Open the pipe to comm with the server
+  write(stoc_fd, tosend, strlen(tosend)); //Write the name of the secret pipe
+  remove(stoc_fd); //Remove, for security reasons
 
-  char server_message[HANDSHAKE_BUFFER_SIZE];
-  read(ctos_fd, server_message, sizeof(server_message));
+  char server_message[HANDSHAKE_BUFFER_SIZE]; //Message from server
+  read(ctos_fd, server_message, sizeof(server_message)); //Read the Message
+  write(stoc_fd, server_message, sizeof(server_message)); //Write back the message
+
+  return stoc_fd; //Downstream pipe
 
 
 
