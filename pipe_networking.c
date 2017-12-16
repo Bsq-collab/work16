@@ -39,15 +39,17 @@
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
-  mkfifo(getpid(), 0755); //Created secret pipe to write to server with
-  int ctos_fd = open(getpid(), O_RDONLY); //Open the secret pipe and get its file descriptor
+  char pid[10];
+  sprintf(pid, "%d", getpid());
+  mkfifo(pid, 0755); //Created secret pipe to write to server with
+  int ctos_fd = open(pid, O_RDONLY); //Open the secret pipe and get its file descriptor
   *to_server = ctos_fd; //Set to_server to the secret pipe's fd
   char * tosend; //Message to send
-  sscanf(tosend, "%d" + 0, getpid()); //Write the pid/name of the pipe to tosend
+  sprintf(tosend, "%d" + 0, getpid()); //Write the pid/name of the pipe to tosend
 
   int stoc_fd = open("wkp", O_WRONLY); //Open the pipe to comm with the server
   write(stoc_fd, tosend, strlen(tosend)); //Write the name of the secret pipe
-  remove(stoc_fd); //Remove, for security reasons
+  remove(pid); //Remove, for security reasons
 
   char server_message[HANDSHAKE_BUFFER_SIZE]; //Message from server
   read(ctos_fd, server_message, sizeof(server_message)); //Read the Message
