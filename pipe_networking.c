@@ -40,7 +40,24 @@
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
-  char pid[10];
+  char buffer[HANDSHAKE_BUFFER_SIZE];
+  int from_client;
+  if(mkfifo("private",0644)==-1){
+    printf("ERROR!: %s\n",strerror(errno));
+  }
+
+  *to_server=open("wkp",O_WRONLY);
+  write(*to_server, "private",sizeof("private"));
+  from_client=open("private",O_RDONLY);
+  read(from_client,buffer,sizeof(buffer));
+  remove("private");
+  if(!strcmp(buffer,ACK)){
+    printf("CONNECTED!\n");
+  }
+  write(*to_server,ACK,sizeof(ACK));
+  return from_client;
+}
+/*
   sprintf(pid, "%d", getpid());
   mkfifo(pid, 0755); //Created secret pipe to write to server with
   int ctos_fd = open(pid, O_RDONLY); //Open the secret pipe and get its file descriptor
@@ -55,12 +72,5 @@ int client_handshake(int *to_server) {
   char server_message[HANDSHAKE_BUFFER_SIZE]; //Message from server
   read(ctos_fd, server_message, sizeof(server_message)); //Read the Message
   write(stoc_fd, server_message, sizeof(server_message)); //Write back the message
-
-  return stoc_fd; //Downstream pipe
-
-
-
-
-
-
-}
+*/
+//return stoc_fd; //Downstream pipe
