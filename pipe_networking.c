@@ -13,9 +13,9 @@
 int server_handshake(int *to_client) {
   char message[256];
   // creates the well known pipe server waits for connection
-  mkfifo("server",0644);
+  mkfifo("stoc",0644);
   printf("server pipe created\n");
-  int pipe= open("server",O_RDONLY);
+  int pipe= open("stoc",O_RDONLY);
   *to_client=pipe;
   printf("to_client set to pipe\n");
   printf("Well known pipe waiting for client\n");
@@ -23,7 +23,7 @@ int server_handshake(int *to_client) {
   printf("message read\n");
   //remove pipe for security
   close(pipe);
-  remove("server");
+  remove("stoc");
   printf("removed server byebye!!\n");
 
   return 0;
@@ -40,13 +40,22 @@ int server_handshake(int *to_client) {
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
-  mkfifo("ctos", 0755);
-  char * handshak = "Howdy";
-  char shakhand[HANDSHAKE_BUFFER_SIZE];
+  mkfifo(getpid(), 0755);
+  int ctos_fd = open(getpid(), O_RDONLY);
+  *to_server = ctos_fd;
+  char * tosend;
+  sscanf(tosend, "%d" + 0, getpid());
 
-  int ctos_fd = open("ctos", )
-  write("ctos", handhsak, HANDSHAKE_BUFFER_SIZE);
-  read("stoc", shakhand, HANDSHAKE_BUFFER_SIZE);
-  write("ctos", shakhand, HANDSHAKE_BUFFER_SIZE);
-  return 0;
+  int stoc_fd = open("stoc", O_WRONLY);
+  write(stoc_fd, tosend, strlen(tosend));
+  close(stoc_fd);
+
+  char server_message[HANDSHAKE_BUFFER_SIZE];
+  read(ctos_fd, server_message, sizeof(server_message));
+
+
+
+
+
+
 }
