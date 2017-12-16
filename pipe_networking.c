@@ -25,6 +25,7 @@
     printf("removed server byebye!!\n");
     *to_client=open(message,O_WRONLY);
     write(*to_client,ACK,sizeof(message));
+    read(from_client,message,sizeof(message));
     printf("Server wrote back\n");
     return from_client;
   }
